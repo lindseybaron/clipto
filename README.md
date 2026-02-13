@@ -194,6 +194,16 @@ You can also run it during install:
 bash scripts/install.sh --prepare-headings
 ```
 
+## Run tests
+
+Run unit tests locally:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+GitHub Actions also runs this test suite for pull requests and pushes to `main`.
+
 ## Verification checklist
 
 Copy each line to your clipboard and confirm behavior:
