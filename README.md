@@ -179,7 +179,7 @@ Copy each line to your clipboard and confirm behavior:
 1. `TODO: test python watcher end-to-end`
    - appears under `TODO`
    - inserted at top of section
-   - checkbox item (unchecked), or `[ ]` fallback
+   - checkbox item (unchecked)
 2. `next: follow up with release team`
    - appears under `Next Actions`
 3. `Idea: automate smoke checks on deploy`
@@ -200,8 +200,9 @@ Expected item text format:
   - set Web App access to `Anyone`
   - redeploy and update `web_app_url` if deployment URL changed
 - Checkbox glyph not present:
-  - script tries `DocumentApp.GlyphType.CHECKBOX`
-  - if not supported, it falls back to plain paragraph starting with `[ ] `
+  - ensure **Advanced Google services -> Google Docs API** is enabled in Apps Script
+  - redeploy latest `apps_script/Code.gs`
+  - run `python tools/healthcheck.py --write-test` and inspect returned error details
 
 ## Security notes
 

@@ -63,7 +63,8 @@ function ensureSections(sectionsRaw) {
   var doc = DocumentApp.openById(DOC_ID);
   var body = doc.getBody();
   for (var j = 0; j < sections.length; j++) {
-    findOrCreateH1Section_(body, sections[j]);
+    var loc = findOrCreateH1Section_(body, sections[j]);
+    ensureSpacerAfterHeadingIfEmptySection_(body, loc.headingIndex);
   }
   doc.saveAndClose();
 }
@@ -150,6 +151,34 @@ function findOrCreateH1Section_(body, sectionTitle) {
     headingIndex: headingIndex,
     insertionIndex: headingIndex + 1,
   };
+}
+
+function ensureSpacerAfterHeadingIfEmptySection_(body, headingIndex) {
+  var nextIndex = headingIndex + 1;
+  if (nextIndex >= body.getNumChildren()) {
+    body.insertParagraph(nextIndex, '');
+    return;
+  }
+
+  var nextEl = body.getChild(nextIndex);
+  if (nextEl.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+    return;
+  }
+
+  var nextPara = nextEl.asParagraph();
+  var nextHeading = nextPara.getHeading();
+  var nextText = nextPara.getText();
+
+  // If the next element is another H1, add a plain spacer line between headings.
+  if (nextHeading === DocumentApp.ParagraphHeading.HEADING1) {
+    body.insertParagraph(nextIndex, '');
+    return;
+  }
+
+  // If there's already a blank normal paragraph, keep it.
+  if (nextHeading === DocumentApp.ParagraphHeading.NORMAL && nextText === '') {
+    return;
+  }
 }
 
 function findHeadingInsertionPoint_(sectionTitle) {
