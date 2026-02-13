@@ -48,11 +48,14 @@ If a heading is missing, the script creates it automatically as H1.
 2. Paste `apps_script/Code.gs` contents into the project.
 3. In `Code.gs`, set:
    - `DOC_ID = '<YOUR_DOC_ID>'`
-4. Save.
-5. Deploy -> New deployment -> Web app:
+4. In Apps Script, enable **Advanced Google services**:
+   - Click **Services (+)** in the left sidebar.
+   - Add **Google Docs API**.
+5. Save.
+6. Deploy -> New deployment -> Web app:
    - **Execute as**: `Me`
    - **Who has access**: `Anyone`
-6. Copy the `/exec` URL.
+7. Copy the `/exec` URL.
 
 Notes:
 - Endpoint expects JSON via POST body.

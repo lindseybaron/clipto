@@ -45,20 +45,19 @@ function appendEntry(typeRaw, textRaw, who, sectionRaw) {
   var timestamp = formatNow_();
   var line = '- ' + timestamp + ' [' + whoSafe + ']: ' + text;
 
-  var doc = DocumentApp.openById(DOC_ID);
-  var body = doc.getBody();
+  ensureHeadingExists_(sectionTitle);
+  var insertionPoint = findHeadingInsertionPoint_(sectionTitle);
 
-  var loc = findOrCreateH1Section_(body, sectionTitle);
-  var insertionIndex = loc.insertionIndex;
-
-  // Prefer real checkbox list items; if unsupported in this context, fallback to plain text.
-  try {
-    var listItem = body.insertListItem(insertionIndex, line);
-    listItem.setGlyphType(DocumentApp.GlyphType.CHECKBOX);
-  } catch (err) {
-    body.insertParagraph(insertionIndex, '[ ] ' + line);
+  // Use Docs API checkbox bullets for true clickable checkboxes.
+  if (insertChecklistWithDocsApi_(line, insertionPoint)) {
+    return;
   }
 
+  // Fallback if Docs API is unavailable/misconfigured.
+  var doc = DocumentApp.openById(DOC_ID);
+  var body = doc.getBody();
+  var loc = findOrCreateH1Section_(body, sectionTitle);
+  body.insertParagraph(loc.insertionIndex, '[ ] ' + line);
   doc.saveAndClose();
 }
 
@@ -101,6 +100,101 @@ function findOrCreateH1Section_(body, sectionTitle) {
     headingIndex: headingIndex,
     insertionIndex: headingIndex + 1,
   };
+}
+
+function ensureHeadingExists_(sectionTitle) {
+  var doc = DocumentApp.openById(DOC_ID);
+  var body = doc.getBody();
+  findOrCreateH1Section_(body, sectionTitle);
+  doc.saveAndClose();
+}
+
+function findHeadingInsertionPoint_(sectionTitle) {
+  var docJson = Docs.Documents.get(DOC_ID);
+  var content = (docJson && docJson.body && docJson.body.content) || [];
+  var docEnd = getDocEndIndex_(content);
+
+  for (var i = 0; i < content.length; i++) {
+    var el = content[i];
+    if (!el || !el.paragraph) {
+      continue;
+    }
+
+    var style = el.paragraph.paragraphStyle || {};
+    if (style.namedStyleType !== 'HEADING_1') {
+      continue;
+    }
+
+    var headingText = extractParagraphText_(el).trim();
+    if (headingText === sectionTitle) {
+      var idx = Number(el.endIndex || 1);
+      if (!isFinite(idx) || idx < 1) {
+        idx = 1;
+      }
+      // Clamp to editable range in body.
+      return Math.min(idx, docEnd);
+    }
+  }
+
+  return docEnd;
+}
+
+function insertChecklistWithDocsApi_(line, insertionIndex) {
+  try {
+    var textToInsert = line + '\n';
+    var start = Number(insertionIndex);
+    if (!isFinite(start) || start < 1) {
+      start = 1;
+    }
+    var end = start + textToInsert.length;
+
+    Docs.Documents.batchUpdate(
+      {
+        requests: [
+          {
+            insertText: {
+              location: { index: start },
+              text: textToInsert,
+            },
+          },
+          {
+            createParagraphBullets: {
+              range: { startIndex: start, endIndex: end },
+              bulletPreset: 'BULLET_CHECKBOX',
+            },
+          },
+        ],
+      },
+      DOC_ID
+    );
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function extractParagraphText_(contentElement) {
+  var paragraph = contentElement.paragraph || {};
+  var elements = paragraph.elements || [];
+  var out = '';
+  for (var i = 0; i < elements.length; i++) {
+    var textRun = elements[i] && elements[i].textRun;
+    if (textRun && textRun.content) {
+      out += textRun.content;
+    }
+  }
+  return out.replace(/\n$/, '');
+}
+
+function getDocEndIndex_(content) {
+  var lastEnd = 1;
+  for (var i = 0; i < content.length; i++) {
+    var end = Number(content[i] && content[i].endIndex);
+    if (isFinite(end) && end > lastEnd) {
+      lastEnd = end;
+    }
+  }
+  return Math.max(1, lastEnd - 1);
 }
 
 function formatNow_() {
