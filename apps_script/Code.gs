@@ -2,9 +2,6 @@ const DOC_ID = '<REPLACE_WITH_DOC_ID>';
 
 const TAG_TO_SECTION = {
   todo: 'TODO',
-  it: 'Apex 2 Integration Test Approach',
-  a2: 'Apex 2 General',
-  aiqa: 'AI in QA Proposal',
   fu: 'Follow Up',
   misc: 'Miscellany',
 };
@@ -17,6 +14,7 @@ function doPost(e) {
 
     var payload = JSON.parse(e.postData.contents);
     var type = payload && payload.type;
+    var section = payload && payload.section;
     var text = payload && payload.text;
     var who = payload && payload.who;
 
@@ -27,16 +25,16 @@ function doPost(e) {
       throw new Error('Missing required field: text');
     }
 
-    appendEntry(type, text, who);
+    appendEntry(type, text, who, section);
     return ContentService.createTextOutput('OK').setMimeType(ContentService.MimeType.TEXT);
   } catch (err) {
     return ContentService.createTextOutput('Error: ' + err.message).setMimeType(ContentService.MimeType.TEXT);
   }
 }
 
-function appendEntry(typeRaw, textRaw, who) {
+function appendEntry(typeRaw, textRaw, who, sectionRaw) {
   var type = normalizeType_(typeRaw);
-  var sectionTitle = TAG_TO_SECTION[type] || TAG_TO_SECTION.misc;
+  var sectionTitle = resolveSectionTitle_(type, sectionRaw);
   var text = String(textRaw || '').trim();
   if (!text) {
     throw new Error('text is empty after trimming');
@@ -61,6 +59,14 @@ function appendEntry(typeRaw, textRaw, who) {
   }
 
   doc.saveAndClose();
+}
+
+function resolveSectionTitle_(type, sectionRaw) {
+  var section = String(sectionRaw || '').trim();
+  if (section) {
+    return section;
+  }
+  return TAG_TO_SECTION[type] || TAG_TO_SECTION.misc;
 }
 
 function normalizeType_(typeRaw) {

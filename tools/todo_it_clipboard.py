@@ -17,9 +17,6 @@ import pyperclip
 
 DEFAULT_TAG_MAP = {
     "todo": "TODO",
-    "it": "Apex 2 Integration Test Approach",
-    "a2": "Apex 2 General",
-    "aiqa": "AI in QA Proposal",
     "fu": "Follow Up",
     "misc": "Miscellany",
 }
@@ -66,7 +63,9 @@ def load_config(config_path: Path) -> dict[str, Any]:
     }
 
 
-def parse_clipboard_text(raw_text: str, unknown_behavior: str, tag_map: dict[str, str]) -> dict[str, str] | None:
+def parse_clipboard_text(
+    raw_text: str, unknown_behavior: str, tag_map: dict[str, str]
+) -> dict[str, str] | None:
     if raw_text is None:
         return None
 
@@ -95,7 +94,11 @@ def parse_clipboard_text(raw_text: str, unknown_behavior: str, tag_map: dict[str
         else:
             return None
 
-    return {"type": prefix, "text": text}
+    section = str(tag_map.get(prefix, "")).strip()
+    if not section:
+        return None
+
+    return {"type": prefix, "section": section, "text": text}
 
 
 def post_payload(web_app_url: str, payload: dict[str, str]) -> bool:
@@ -154,7 +157,12 @@ def main() -> int:
                 tag_map=config["tag_map"],
             )
             if parsed:
-                payload = {"type": parsed["type"], "text": parsed["text"], "who": config["who"]}
+                payload = {
+                    "type": parsed["type"],
+                    "section": parsed["section"],
+                    "text": parsed["text"],
+                    "who": config["who"],
+                }
                 ok = post_payload(config["web_app_url"], payload)
                 if ok:
                     print(f"[sent] {payload['type']}: {payload['text']}")

@@ -1,6 +1,6 @@
 # Clipboard -> Google Doc Checklist
 
-Small automation project for capturing clipboard lines like `todo: ...` or `a2: ...` and appending them into a Google Doc under fixed H1 sections, newest first.
+Small automation project for capturing clipboard lines like `todo: ...` or `next: ...` and appending them into a Google Doc under configurable H1 sections, newest first.
 
 ## What this includes
 
@@ -11,14 +11,13 @@ Small automation project for capturing clipboard lines like `todo: ...` or `a2: 
 
 ## Prefix routing
 
-Case-insensitive tags map to these exact Doc section headings:
+Case-insensitive tags map to the exact Doc section headings as defined in `config.json`. Add or edit as you'd like.
 
 - `todo:` -> `TODO`
-- `it:` -> `Apex 2 Integration Test Approach`
-- `a2:` -> `Apex 2 General`
-- `aiqa:` -> `AI in QA Proposal`
-- `fu:` -> `Follow Up`
+- `next:` -> `Next Actions`
+- `idea:` -> `Ideas`
 - `misc:` -> `Miscellany`
+- `<tag>:` -> `Your Description Here` 
 
 ## Setup (under 10 minutes)
 
@@ -39,16 +38,9 @@ python tools/todo_it_clipboard.py
 
 ### 1) Prepare your Google Doc
 
-Create a Google Doc and add these six headings exactly, as **Heading 1**:
+Create a Google Doc. You can pre-create headings from your `config.json` `tag_map` values as **Heading 1**, but this is optional.
 
-1. `TODO`
-2. `Apex 2 Integration Test Approach`
-3. `Apex 2 General`
-4. `AI in QA Proposal`
-5. `Follow Up`
-6. `Miscellany`
-
-If any heading is missing, the script creates it as H1.
+If a heading is missing, the script creates it automatically as H1.
 
 ### 2) Deploy Apps Script Web App
 
@@ -78,9 +70,21 @@ Edit `config.json`:
 
 - `google_doc_url`: your full Google Doc URL
 - `web_app_url`: your deployed Apps Script `/exec` URL
-- `who`: initials/name to stamp in each entry (default `LB`)
+- `who`: initials/name to stamp in each entry (template default `ME`)
 - `poll_interval`: clipboard polling interval in seconds (default `0.5`)
 - `unknown_prefix_behavior`: `map_to_misc` or `ignore` (default `map_to_misc`)
+- `tag_map`: your tags and their target section headings (case-insensitive tags)
+
+Example:
+
+```json
+"tag_map": {
+  "todo": "TODO",
+  "next": "Next Actions",
+  "idea": "Ideas",
+  "misc": "Miscellany"
+}
+```
 
 ### 4) Install and run
 
@@ -99,20 +103,21 @@ Copy each line to your clipboard and confirm behavior:
    - appears under `TODO`
    - inserted at top of section
    - checkbox item (unchecked), or `[ ]` fallback
-2. `a2: figure out who owns the event flows`
-   - appears under `Apex 2 General`
-3. `It: add negative-path coverage`
-   - routes case-insensitively to `Apex 2 Integration Test Approach`
+2. `next: follow up with release team`
+   - appears under `Next Actions`
+3. `Idea: automate smoke checks on deploy`
+   - routes case-insensitively to `Ideas`
 
 Expected item text format:
 
-- `- yyyy-MM-dd HH:mm [LB]: <note>`
+- `- yyyy-MM-dd HH:mm [ME]: <note>`
 
 ## Troubleshooting
 
 - No entries in the Doc:
   - verify `DOC_ID` in Apps Script
   - verify `web_app_url` in `config.json`
+  - verify the intended tag exists in `config.json` `tag_map`
   - redeploy and ensure you are using latest `/exec` URL
 - Permission errors:
   - review deployment access (`Anyone in domain` vs `Anyone with the link`)
