@@ -39,6 +39,7 @@ This command will:
 - bootstrap your Python environment
 - create `config.json` if missing
 - validate required config fields
+- optionally pre-create missing doc headings (`--prepare-headings`)
 - optionally install launchd startup
 
 Then run manually (if you skipped launchd):
@@ -46,6 +47,12 @@ Then run manually (if you skipped launchd):
 ```bash
 source .venv/bin/activate
 python tools/todo_it_clipboard.py
+```
+
+Or include heading pre-format during install:
+
+```bash
+bash scripts/install.sh --prepare-headings
 ```
 
 ### 1) Prepare your Google Doc
@@ -158,6 +165,12 @@ python tools/prepare_doc_headings.py
 ```
 
 This command is safe to rerun; existing headings are not duplicated.
+
+You can also run it during install:
+
+```bash
+bash scripts/install.sh --prepare-headings
+```
 
 ## Verification checklist
 
