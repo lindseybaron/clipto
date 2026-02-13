@@ -2,7 +2,8 @@ const DOC_ID = '<REPLACE_WITH_DOC_ID>';
 
 const TAG_TO_SECTION = {
   todo: 'TODO',
-  fu: 'Follow Up',
+  next: 'Next Actions',
+  idea: 'Ideas',
   misc: 'Miscellany',
 };
 
