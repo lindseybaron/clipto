@@ -1,0 +1,15 @@
+{
+  "google_doc_url": "https://docs.google.com/document/d/<YOUR_DOC_ID>/edit",
+  "web_app_url": "https://script.google.com/macros/s/<YOUR_DEPLOYMENT_ID>/exec",
+  "who": "LB",
+  "poll_interval": 0.5,
+  "unknown_prefix_behavior": "map_to_misc",
+  "tag_map": {
+    "todo": "TODO",
+    "it": "Apex 2 Integration Test Approach",
+    "a2": "Apex 2 General",
+    "aiqa": "AI in QA Proposal",
+    "fu": "Follow Up",
+    "misc": "Miscellany"
+  }
+}

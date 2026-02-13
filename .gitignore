@@ -1,0 +1,8 @@
+# Local user config with private URLs and identity.
+config.json
+
+# Python cache / virtual env artifacts.
+__pycache__/
+*.pyc
+.venv/
+venv/
