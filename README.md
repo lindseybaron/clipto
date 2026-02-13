@@ -8,6 +8,8 @@ Small automation project for capturing clipboard lines like `todo: ...` or `next
 - `tools/todo_it_clipboard.py`: Python clipboard watcher that POSTs matching lines.
 - `config.example.json`: user-specific config template.
 - `scripts/bootstrap.sh`: one-command local setup (venv + deps + config scaffold).
+- `scripts/install_launchagent.sh`: install/start macOS login auto-run via launchd.
+- `scripts/uninstall_launchagent.sh`: remove/stop the launchd auto-run job.
 
 ## Prefix routing
 
@@ -97,6 +99,31 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python tools/todo_it_clipboard.py
 ```
+
+### 5) Optional: run automatically at login (macOS launchd)
+
+Install and start:
+
+```bash
+bash scripts/install_launchagent.sh
+```
+
+Check status:
+
+```bash
+launchctl print "gui/$(id -u)/com.clipboard-doc-checklist.watcher" | sed -n '1,40p'
+```
+
+Stop and remove:
+
+```bash
+bash scripts/uninstall_launchagent.sh
+```
+
+Log files:
+
+- `logs/launchd.out.log`
+- `logs/launchd.err.log`
 
 ## Verification checklist
 
