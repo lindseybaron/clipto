@@ -111,7 +111,8 @@ function ensureHeadingExists_(sectionTitle) {
 
 function findHeadingInsertionPoint_(sectionTitle) {
   var docJson = Docs.Documents.get(DOC_ID);
-  var content = (docJson && docJson.body && docJson.body.content) || [];
+  var tabContext = getPrimaryTabContext_(docJson);
+  var content = tabContext.content;
   var docEnd = getDocEndIndex_(content);
 
   for (var i = 0; i < content.length; i++) {
@@ -131,35 +132,55 @@ function findHeadingInsertionPoint_(sectionTitle) {
       if (!isFinite(idx) || idx < 1) {
         idx = 1;
       }
-      // Clamp to editable range in body.
-      return Math.min(idx, docEnd);
+      // Use paragraph end index directly; clamping here can collapse text into heading
+      // when the heading is near end-of-doc.
+      return {
+        index: idx,
+        tabId: tabContext.tabId,
+        atDocEnd: idx >= docEnd,
+      };
     }
   }
 
-  return docEnd;
+  return {
+    index: docEnd,
+    tabId: tabContext.tabId,
+    atDocEnd: true,
+  };
 }
 
-function insertChecklistWithDocsApi_(line, insertionIndex) {
+function insertChecklistWithDocsApi_(line, insertionPoint) {
   try {
-    var textToInsert = line + '\n';
-    var start = Number(insertionIndex);
+    var start = Number(insertionPoint && insertionPoint.index);
     if (!isFinite(start) || start < 1) {
       start = 1;
     }
+    var atDocEnd = !!(insertionPoint && insertionPoint.atDocEnd);
+    var textToInsert = atDocEnd ? '\n' + line + '\n' : line + '\n';
+    var bulletStart = atDocEnd ? start + 1 : start;
     var end = start + textToInsert.length;
+    var bulletEnd = bulletStart + line.length + 1;
+    var tabId = insertionPoint && insertionPoint.tabId;
+
+    var insertLocation = { index: start };
+    var bulletRange = { startIndex: bulletStart, endIndex: bulletEnd };
+    if (tabId) {
+      insertLocation.tabId = tabId;
+      bulletRange.tabId = tabId;
+    }
 
     Docs.Documents.batchUpdate(
       {
         requests: [
           {
             insertText: {
-              location: { index: start },
+              location: insertLocation,
               text: textToInsert,
             },
           },
           {
             createParagraphBullets: {
-              range: { startIndex: start, endIndex: end },
+              range: bulletRange,
               bulletPreset: 'BULLET_CHECKBOX',
             },
           },
@@ -195,6 +216,25 @@ function getDocEndIndex_(content) {
     }
   }
   return Math.max(1, lastEnd - 1);
+}
+
+function getPrimaryTabContext_(docJson) {
+  var tabs = (docJson && docJson.tabs) || [];
+  if (tabs.length > 0) {
+    var tab = tabs[0] || {};
+    var tabId = tab.tabProperties && tab.tabProperties.tabId;
+    var tabContent =
+      (tab.documentTab && tab.documentTab.body && tab.documentTab.body.content) || [];
+    return {
+      tabId: tabId || null,
+      content: tabContent,
+    };
+  }
+
+  return {
+    tabId: null,
+    content: (docJson && docJson.body && docJson.body.content) || [],
+  };
 }
 
 function formatNow_() {
