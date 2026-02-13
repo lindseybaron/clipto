@@ -13,6 +13,7 @@ Small automation project for capturing clipboard lines like `todo: ...` or `next
 - `scripts/bootstrap.sh`: one-command local setup (venv + deps + config scaffold).
 - `scripts/install_launchagent.sh`: install/start macOS login auto-run via launchd.
 - `scripts/uninstall_launchagent.sh`: remove/stop the launchd auto-run job.
+- `scripts/pre-commit-block-config.sh`: optional git pre-commit guard to block `config.json`.
 
 ## Prefix routing
 
@@ -215,6 +216,47 @@ Expected item text format:
 MIT. See `LICENSE`.
 
 ## Publish to GitHub
+
+### Public-release safety checklist
+
+Run this before any public commit/push:
+
+1. Verify ignore rule exists:
+
+```bash
+rg -n '^config\.json$' .gitignore
+```
+
+2. Verify `config.json` is not tracked:
+
+```bash
+git ls-files --error-unmatch config.json && echo "[FAIL] tracked" || echo "[OK] not tracked"
+```
+
+3. Verify `config.json` is not staged:
+
+```bash
+git diff --cached --name-only | rg -x 'config\.json' && echo "[FAIL] staged" || echo "[OK] not staged"
+```
+
+If either check fails, fix it before committing:
+
+```bash
+git restore --staged config.json 2>/dev/null || true
+git rm --cached config.json
+```
+
+### Optional pre-commit guard (recommended)
+
+Install the hook so commits fail automatically if `config.json` is tracked or staged:
+
+```bash
+mkdir -p .git/hooks
+cp scripts/pre-commit-block-config.sh .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+If you already have a `pre-commit` hook, merge the checks from `scripts/pre-commit-block-config.sh` instead of overwriting it.
 
 ```bash
 git init
