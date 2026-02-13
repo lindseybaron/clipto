@@ -6,6 +6,7 @@ Small automation project for capturing clipboard lines like `todo: ...` or `next
 
 - `apps_script/Code.gs`: Google Apps Script Web App (`doPost`) that writes to your Google Doc.
 - `tools/todo_it_clipboard.py`: Python clipboard watcher that POSTs matching lines.
+- `tools/healthcheck.py`: validates config and can send an end-to-end probe item.
 - `config.example.json`: user-specific config template.
 - `scripts/bootstrap.sh`: one-command local setup (venv + deps + config scaffold).
 - `scripts/install_launchagent.sh`: install/start macOS login auto-run via launchd.
@@ -124,6 +125,20 @@ Log files:
 
 - `logs/launchd.out.log`
 - `logs/launchd.err.log`
+
+### 6) Run health checks
+
+Validate local config only:
+
+```bash
+python tools/healthcheck.py
+```
+
+Validate config and send an end-to-end probe item:
+
+```bash
+python tools/healthcheck.py --write-test
+```
 
 ## Verification checklist
 
