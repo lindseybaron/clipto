@@ -7,6 +7,7 @@ Small automation project for capturing clipboard lines like `todo: ...` or `next
 - `apps_script/Code.gs`: Google Apps Script Web App (`doPost`) that writes to your Google Doc.
 - `tools/todo_it_clipboard.py`: Python clipboard watcher that POSTs matching lines.
 - `tools/healthcheck.py`: validates config and can send an end-to-end probe item.
+- `tools/prepare_doc_headings.py`: creates missing H1 headings from `config.json` `tag_map`.
 - `config.example.json`: user-specific config template.
 - `scripts/install.sh`: one-command install + config validation + optional launchd setup.
 - `scripts/bootstrap.sh`: one-command local setup (venv + deps + config scaffold).
@@ -147,6 +148,16 @@ Validate config and send an end-to-end probe item:
 ```bash
 python tools/healthcheck.py --write-test
 ```
+
+### 7) Pre-format doc headings from config
+
+Create any missing H1 headings based on `config.json` `tag_map` values:
+
+```bash
+python tools/prepare_doc_headings.py
+```
+
+This command is safe to rerun; existing headings are not duplicated.
 
 ## Verification checklist
 
